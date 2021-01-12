@@ -19,7 +19,7 @@ var CharacterAppearancePreviousEmoticon = "";
 var CharacterAppearanceMode = "";
 var CharacterAppearanceCloth = null;
 
-const CanvasUpperOverflow = 600;
+const CanvasUpperOverflow = 700;
 const CanvasLowerOverflow = 150;
 const CanvasDrawHeight = 1000 + CanvasUpperOverflow + CanvasLowerOverflow;
 
@@ -610,7 +610,7 @@ function AppearanceRun() {
 	// In item coloring mode
 	if (CharacterAppearanceMode == "Color") {
 		// Leave the color picker if the item is gone.
-		if (!InventoryGet(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName)) ItemColorExit();
+		if (!InventoryGet(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName)) ItemColorCancelAndExit();
 		// Draw the color picker
 	    ItemColorDraw(CharacterAppearanceSelection, CharacterAppearanceColorPickerGroupName, 1300, 25, 675, 950);
 	}
@@ -1026,7 +1026,7 @@ function AppearanceExit() {
 	}
 
 	if (CharacterAppearanceMode === "Color") {
-		return ItemColorExit();
+		return ItemColorExitClick();
 	}
 
 	if (CharacterAppearanceMode != "") {

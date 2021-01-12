@@ -708,10 +708,9 @@ function CharacterRefresh(C, Push) {
 		if (DialogColor != null) {
 			const FocusItem = C && C.FocusGroup ? InventoryGet(C, C.FocusGroup.Name) : null;
 			if ((ItemColorItem && !FocusItem) || (!ItemColorItem && FocusItem) || InventoryGetItemProperty(ItemColorItem, "Name") !== InventoryGetItemProperty(FocusItem, "Name")) {
-				ItemColorExit();
+				ItemColorCancelAndExit();
 				DialogColor = null;
 				DialogColorSelect = null;
-				ElementRemove("InputColor");
 				DialogMenuButtonBuild(C);
 			}
 		}
@@ -978,7 +977,7 @@ function CharacterSetActivePose(C, NewPose, ForceChange) {
  * @param {number} [Timer] - Optional: time the expression will last
  * @returns {void} - Nothing
  */
-function CharacterSetFacialExpression(C, AssetGroup, Expression, Timer) {
+function CharacterSetFacialExpression(C, AssetGroup, Expression, Timer, Color) {
 	// A normal eye expression is triggered for both eyes
 	if (AssetGroup == "Eyes") CharacterSetFacialExpression(C, "Eyes2", Expression, Timer);
 	if (AssetGroup == "Eyes1") AssetGroup = "Eyes";
@@ -991,9 +990,10 @@ function CharacterSetFacialExpression(C, AssetGroup, Expression, Timer) {
 				if (!C.Appearance[A].Property) C.Appearance[A].Property = {};
 				if (C.Appearance[A].Property.Expression != Expression) {
 					C.Appearance[A].Property.Expression = Expression;
-					CharacterRefresh(C, false);
+					if (Color && CommonColorIsValid(Color)) C.Appearance[A].Color = Color;
+					CharacterRefresh(C);
 					if (CurrentScreen == "ChatRoom") {
-						if (C.ID == 0) ServerSend("ChatRoomCharacterExpressionUpdate", { Name: Expression, Group: AssetGroup, Appearance: ServerAppearanceBundle(C.Appearance) });
+						if (C.ID == 0) ChatRoomCharacterItemUpdate(C, AssetGroup);
 						else ChatRoomCharacterUpdate(C);
 					}
 				}

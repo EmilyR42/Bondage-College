@@ -4,6 +4,7 @@ var DialogTextDefault = "";
 var DialogTextDefaultTimer = -1;
 var DialogProgress = -1;
 var DialogColor = null;
+var DialogExpressionColor = null;
 var DialogColorSelect = null;
 var DialogPreviousCharacterData = {};
 var DialogProgressStruggleCount = 0;
@@ -460,6 +461,7 @@ function DialogLeaveItemMenu() {
 	AudioDialogStop();
 	ColorPickerEndPick();
 	ColorPickerRemoveEventListener();
+	ItemColorCancelAndExit();
 }
 
 /**
@@ -1163,7 +1165,7 @@ function DialogItemClick(ClickItem) {
 
 	// Cannot change item if the previous one is locked or blocked by another group
 	if ((CurrentItem == null) || !InventoryItemHasEffect(CurrentItem, "Lock", true)) {
-		if (!InventoryGroupIsBlocked(C, null, true) && !ClickItem.Worn)
+		if (!InventoryGroupIsBlocked(C, null, true) && (!InventoryGroupIsBlocked(C) || !ClickItem.Worn))
 			if (InventoryAllow(C, ClickItem.Asset.Prerequisite) && InventoryChatRoomAllow(ClickItem.Asset.Category))
 				if ((CurrentItem == null) || (CurrentItem.Asset.Name != ClickItem.Asset.Name)) {
 					if (ClickItem.Asset.Wear) {
@@ -1229,12 +1231,11 @@ function DialogClick() {
 		DialogLeaveItemMenu();
 		DialogLeaveFocusItem();
 		var C = (MouseX < 500) ? Player : CurrentCharacter;
-		let X = CharacterAppearanceXOffset(C, C.HeightRatio) + (MouseX < 500 ? 0 : 500);
-		let Y = CharacterAppearanceYOffset(C, C.HeightRatio);
+		let X = MouseX < 500 ? 0 : 500;
 		for (let A = 0; A < AssetGroup.length; A++)
 			if ((AssetGroup[A].Category == "Item") && (AssetGroup[A].Zone != null))
 				for (let Z = 0; Z < AssetGroup[A].Zone.length; Z++)
-					if (DialogClickedInZone(C, AssetGroup[A].Zone[Z], C.HeightRatio, X, Y)) {
+					if (DialogClickedInZone(C, AssetGroup[A].Zone[Z], 1, X, 0, C.HeightRatio)) {
 						C.FocusGroup = AssetGroup[A];
 						DialogItemToLock = null;
 						DialogFocusItem = null;
@@ -1369,17 +1370,37 @@ function DialogClick() {
  * Returns whether the clicked co-ordinates are inside the asset zone
  * @param {Character} C - The character the click is on
  * @param {Array} Zone - The 4 part array of the rectangular asset zone on the character's body: [X, Y, Width, Height]
+ * @param {number} Zoom - The amount the character has been zoomed
  * @param {number} X - The X co-ordinate of the click
  * @param {number} Y - The Y co-ordinate of the click
- * @param {number} Zoom - The amount the character has been zoomed
+ * @param {number} HeightRatio - The displayed height ratio of the character
  * @returns {boolean} - If TRUE the click is inside the zone
  */
-function DialogClickedInZone(C, Zone, Zoom, X, Y) {
+function DialogClickedInZone(C, Zone, Zoom, X, Y, HeightRatio) {
+	let CZ = DialogGetCharacterZone(C, Zone, X, Y, Zoom, HeightRatio);
+	return MouseIn(CZ[0], CZ[1], CZ[2], CZ[3]);
+}
+
+/**
+ * Return the co-ordinates and dimensions of the asset group zone as it appears on screen
+ * @param {Character} C - The character the zone is calculated for
+ * @param {Array} Zone - The 4 part array of the rectangular asset zone: [X, Y, Width, Height]
+ * @param {number} X - The starting X co-ordinate of the character's position
+ * @param {number} Y - The starting Y co-ordinate of the character's position
+ * @param {number} Zoom - The amount the character has been zoomed
+ * @param {number} HeightRatio - The displayed height ratio of the character
+ * @returns {Array} - The 4 part array of the displayed rectangular asset zone: [X, Y, Width, Height]
+ */
+function DialogGetCharacterZone(C, Zone, X, Y, Zoom, HeightRatio) {
+	X += CharacterAppearanceXOffset(C, HeightRatio) * Zoom;
+	Y += CharacterAppearanceYOffset(C, HeightRatio) * Zoom;
+	Zoom *= HeightRatio;
+
 	let Left = X + Zone[0] * Zoom;
 	let Top = CharacterAppearsInverted(C) ? 1000 - (Y + (Zone[1] + Zone[3]) * Zoom) : Y + Zone[1] * Zoom;
 	let Width = Zone[2] * Zoom;
 	let Height = Zone[3] * Zoom;
-	return MouseIn(Left, Top, Width, Height);
+	return [Left, Top, Width, Height];
 }
 
 /**
@@ -1533,7 +1554,12 @@ function DialogDrawItemMenu(C) {
 		if (InventoryGroupIsBlocked(C)) {
 			var tempDialogInventory = [];
 			for (let I = 0; I < DialogInventory.length; I++) {
-				if ((DialogInventory[I].Asset.Name == "SpankingToys") || DialogInventory[I].Worn) tempDialogInventory.push(DialogInventory[I]);
+				if ((DialogInventory[I].Asset.Name == "SpankingToys")) tempDialogInventory.push(DialogInventory[I]);
+			}
+			if (tempDialogInventory.length > 0) {
+				for (let I = 0; I < DialogInventory.length; I++) {
+					if (DialogInventory[I].Worn) tempDialogInventory.push(DialogInventory[I]);
+				}
 			}
 			DialogInventory = tempDialogInventory;
 		}
@@ -1564,7 +1590,10 @@ function DialogDrawItemMenu(C) {
 			}
 		}
 
-		if (DialogInventory.length > 0) return;
+		if (DialogInventory.length > 0) {
+			if (InventoryGroupIsBlocked(C)) DrawText(DialogFind(Player, "ZoneBlocked"), 1500, 700, "White", "Black");
+			return;
+		}
 	}
 
 	// If the player is progressing
@@ -1767,9 +1796,18 @@ function DialogDrawExpressionMenu() {
 
 	// Draw the expression groups
 	DrawText(DialogFind(Player, "FacialExpression"), 165, 25, "White", "Black");
-	DrawButton(320, 50, 90, 90, "", "White", "Icons/BlindToggle" + DialogFacialExpressionsSelectedBlindnessLevel + ".png", DialogFind(Player, "BlindToggleFacialExpressions"));
-	DrawButton(220, 50, 90, 90, "", "White", "Icons/WinkL.png", DialogFind(Player, "WinkLFacialExpressions"));
-	DrawButton(120, 50, 90, 90, "", "White", "Icons/WinkR.png", DialogFind(Player, "WinkRFacialExpressions"));
+	if (typeof DialogFacialExpressionsSelected === 'number' && DialogFacialExpressionsSelected >= 0 && DialogFacialExpressionsSelected < DialogFacialExpressions.length && DialogFacialExpressions[DialogFacialExpressionsSelected].Appearance.Asset.Group.AllowColorize && DialogFacialExpressions[DialogFacialExpressionsSelected].Group !== "Eyes") {
+		DrawButton(320, 50, 90, 90, "", "White", "Icons/ColorPick.png", DialogFind(Player, "ColorChange"));
+	}
+	DrawButton(220, 50, 90, 90, "", "White", "Icons/BlindToggle" + DialogFacialExpressionsSelectedBlindnessLevel + ".png", DialogFind(Player, "BlindToggleFacialExpressions"));
+	const Expression = WardrobeGetExpression(Player);
+	const Eye1Closed = Expression.Eyes === "Closed";
+	const Eye2Closed = Expression.Eyes2 === "Closed";
+	let WinkIcon = "WinkNone";
+	if (Eye1Closed && Eye2Closed) WinkIcon = "WinkBoth";
+	else if (Eye1Closed) WinkIcon = "WinkR";
+	else if (Eye2Closed) WinkIcon = "WinkL";
+	DrawButton(120, 50, 90, 90, "", "White", `Icons/${WinkIcon}.png`, DialogFind(Player, "WinkFacialExpressions"));
 	DrawButton(20, 50, 90, 90, "", "White", "Icons/Reset.png", DialogFind(Player, "ClearFacialExpressions"));
 	if (!DialogFacialExpressions || !DialogFacialExpressions.length) DialogFacialExpressionsBuild();
 	for (let I = 0; I < DialogFacialExpressions.length; I++) {
@@ -1796,26 +1834,50 @@ function DialogDrawExpressionMenu() {
 function DialogClickExpressionMenu() {
 	if (MouseIn(20, 50, 90, 90)) {
 		DialogFacialExpressions.forEach(FE => {
-			CharacterSetFacialExpression(Player, FE.Group);
+			let Color = null;
+			if (FE.Appearance.Asset.Group.AllowColorize && FE.Group !== "Eyes") Color = "Default";
+			CharacterSetFacialExpression(Player, FE.Group, null, null, Color);
 			FE.CurrentExpression = null;
 		});
+		if (DialogExpressionColor != null) ItemColorSaveAndExit();
 	} else if (MouseIn(120, 50, 90, 90)) {
-		const EyesExpression = WardrobeGetExpression(Player);
 		const CurrentExpression = DialogFacialExpressions.find(FE => FE.Group == "Eyes").CurrentExpression;
-		CharacterSetFacialExpression(Player, "Eyes1", (EyesExpression.Eyes !== "Closed") ? "Closed" : (CurrentExpression !== "Closed" ? CurrentExpression : null));
+		const EyesExpression = WardrobeGetExpression(Player);
+		const LeftEyeClosed = EyesExpression.Eyes2 === "Closed";
+		const RightEyeClosed = EyesExpression.Eyes === "Closed";
+		if (!LeftEyeClosed && !RightEyeClosed) CharacterSetFacialExpression(Player, "Eyes2", "Closed", null);
+		else if (LeftEyeClosed && !RightEyeClosed) CharacterSetFacialExpression(Player, "Eyes", "Closed", null);
+		else if (LeftEyeClosed && RightEyeClosed) CharacterSetFacialExpression(Player, "Eyes2", CurrentExpression !== "Closed" ? CurrentExpression : null, null);
+		else CharacterSetFacialExpression(Player, "Eyes", CurrentExpression !== "Closed" ? CurrentExpression : null, null);
 	} else if (MouseIn(220, 50, 90, 90)) {
-		const EyesExpression = WardrobeGetExpression(Player);
-		const CurrentExpression = DialogFacialExpressions.find(FE => FE.Group == "Eyes").CurrentExpression;
-		CharacterSetFacialExpression(Player, "Eyes2", (EyesExpression.Eyes2 !== "Closed") ? "Closed" : (CurrentExpression !== "Closed" ? CurrentExpression : null));
-	} else if (MouseIn(320, 50, 90, 90)) {
 		DialogFacialExpressionsSelectedBlindnessLevel += 1;
 		if (DialogFacialExpressionsSelectedBlindnessLevel > 3)
 			DialogFacialExpressionsSelectedBlindnessLevel = 1;
+	} else if (MouseIn(320, 50, 90, 90)) {
+		if (typeof DialogFacialExpressionsSelected === 'number' && DialogFacialExpressionsSelected >= 0 && DialogFacialExpressionsSelected < DialogFacialExpressions.length && DialogFacialExpressions[DialogFacialExpressionsSelected].Appearance.Asset.Group.AllowColorize && DialogFacialExpressions[DialogFacialExpressionsSelected].Group !== "Eyes") {
+			const GroupName = DialogFacialExpressions[DialogFacialExpressionsSelected].Appearance.Asset.Group.Name;
+			const Item = InventoryGet(Player, GroupName);
+			const originalColor = Item.Color;
+			Player.FocusGroup = AssetGroupGet(Player.AssetFamily, GroupName);
+			DialogColor = "";
+			DialogExpressionColor = "";
+			ItemColorLoad(Player, Item, 1300, 25, 675, 950);
+			ItemColorOnExit((save) => {
+				DialogColor = null;
+				DialogExpressionColor = null;
+				Player.FocusGroup = null;
+				if (save && !CommonColorsEqual(originalColor, Item.Color)) {
+					ServerPlayerAppearanceSync();
+					ChatRoomCharacterItemUpdate(Player, GroupName);
+				}
+			});
+		}
 	} else {
 		// Expression category buttons
 		for (let I = 0; I < DialogFacialExpressions.length; I++) {
 			if (MouseIn(20, 185 + 100 * I, 90, 90)) {
 				DialogFacialExpressionsSelected = I;
+				if (DialogExpressionColor != null) ItemColorSaveAndExit();
 			}
 		}
 
