@@ -617,7 +617,7 @@ var AssetFemale3DCG = [
 				{ Name: "Laces", AllowColorize: true}
 				]
 			},
-			{ Name: "MistressBoots", Fetish: ["Leather"], Value: -1, HideItem: ["SocksSocks4", "SocksSocks5"], Alpha: [{ Group: ["BodyLower", "Socks", "SuitLower"], Masks: [[75, 875, 350, 200]] }], Height: 35	},
+			{ Name: "MistressBoots", Fetish: ["Leather"], Value: -1, BuyGroup: "MissBoots", HideItem: ["SocksSocks4", "SocksSocks5"], Alpha: [{ Group: ["BodyLower", "Socks", "SuitLower"], Masks: [[75, 875, 350, 200]] }], Height: 35	},
 			{ Name: "PonyBoots", Fetish: ["Pony"], Value: -1, Alpha: [{ Group: ["BodyLower", "Socks", "SuitLower"], Masks: [[75, 875, 350, 200]] }], Height: 35},
 			{ Name: "Sandals", Priority: 22, Value: 30, HideItem: ["SocksSocks0", "SocksSocks1", "SocksSocks2", "SocksSocks3", "SocksSocks4", "SocksSocks5", "SocksSocks6", "SocksSocksFur"], Height: 3 },
 			{ Name: "SandalsRS", Priority: 22, Value: 30, DefaultColor:["#AA9977", "#999999"], HideItem: ["SocksSocks0", "SocksSocks1", "SocksSocks2", "SocksSocks3", "SocksSocks4", "SocksSocks5", "SocksSocks6", "SocksSocksFur"], Height: 1, Alpha: [{ Group: ["BodyUpper"], Pose: ["Hogtied"], Masks: [[0, 0, 500, 70]] }],
@@ -642,7 +642,7 @@ var AssetFemale3DCG = [
 				{ Name: "Shoes",  AllowColorize: false }
 					]
 			},
-			{ Name: "TestBoots", Value: 2, Alpha: [{Masks: [[180, 900, 50, 100], [280, 900, 50, 100] ] }], DefaultColor: ["#9F0D0D","#700A0A","#700A0A","#9F0D0D"], Height: 35,
+			{ Name: "TestBoots", Fetish: ["Leather"], Value: -1, BuyGroup: "MissBoots", Alpha: [{Masks: [[180, 900, 50, 100], [280, 900, 50, 100] ] }], DefaultColor: ["#9F0D0D","#700A0A","#700A0A","#9F0D0D"], Height: 35,
 				Layer: [
 					{ Name: "Boots", AllowColorize: true},
 					{ Name: "Laces", AllowColorize: true},
