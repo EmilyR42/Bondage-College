@@ -462,7 +462,7 @@ var AssetFemale3DCG = [
 			{ Name: "Bandeau1", Fetish: ["Lingerie"], Priority: 20, Value: 25, Hide: ["ItemNipples", "ItemNipplesPiercings"] },
 			{ Name: "Bustier1", Fetish: ["Lingerie"], Value: 30, Hide: ["ItemNipples", "ItemNipplesPiercings"] },
 			{ Name: "Bikini1", Value: 25, Hide: ["ItemNipples", "ItemNipplesPiercings"] },
-			{ Name: "SexyBikini1", Value: 50, Hide: ["ItemNipples", "ItemNipplesPiercings"],  AllowType: ["Closed"], Extended: true, Layer:[
+			{ Name: "SexyBikini1", Value: 50, Hide: ["ItemNipples", "ItemNipplesPiercings"], AllowType: ["Closed"], Extended: true, Layer:[
 					{ Name: "Main", AllowColorize: true},
 					{ Name: "Sides", AllowColorize: true}
 					]

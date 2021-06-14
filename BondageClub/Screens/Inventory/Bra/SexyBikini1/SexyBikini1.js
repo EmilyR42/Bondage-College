@@ -20,10 +20,11 @@ function InventoryBraSexyBikini1Load() {
 
 // Draw the item extension screen
 function InventoryBraSexyBikini1Draw() {
-	ExtendedItemDraw(InventoryBraSexyBikini1Options, "BikiniType", null, true, true);
+	ExtendedItemDraw(InventoryBraSexyBikini1Options, "BikiniType");
+	
 }
 
 // Catches the item extension clicks
 function InventoryBraSexyBikini1Click() {
-	ExtendedItemClick(InventoryBraSexyBikini1Options, true);
+	ExtendedItemClick(InventoryBraSexyBikini1Options);
 }
