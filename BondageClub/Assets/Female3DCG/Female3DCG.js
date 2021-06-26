@@ -4107,7 +4107,7 @@ var AssetFemale3DCG = [
 			{ Name: "ServingTray", Value: -1, Time: 5, Extended: true, Layer: [
 					{ Name: "Tray", AllowColorize: false },
 					{ Name: "Objects", AllowTypes: ["Drinks", "Cake", "Cookies", "Toys"] },
-					{ Name: "Details" },
+					{ Name: "Details", AllowTypes: ["Drinks", "Cake", "Toys"] },
 				]
 			},
 		],
