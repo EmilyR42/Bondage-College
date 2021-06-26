@@ -4104,7 +4104,12 @@ var AssetFemale3DCG = [
 					{ Name: "Text" },
 				]
 			},
-			{ Name: "ServingTray", Value: -1, Time: 5, Extended: true },
+			{ Name: "ServingTray", Value: -1, Time: 5, Extended: true, Layer: [
+					{ Name: "Tray", AllowColorize: false },
+					{ Name: "Objects" },
+					{ Name: "Details" },
+				]
+			},
 		],
 		Color: ["Default"]
 	},
